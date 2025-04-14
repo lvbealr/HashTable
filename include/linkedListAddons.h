@@ -25,7 +25,8 @@ string *createNode(const char *data) {
     return newNode;
 }
 
-linkedListError insertNode(linkedList<string *> *list, string *data) {
+template<>
+linkedListError insertNode<string *>(linkedList<string *> *list, string *data) {
     customWarning(list,                linkedListError::LIST_BAD_POINTER);
     customWarning(list->freeNode != 0, linkedListError::BAD_CAPACITY);
     customWarning(data,                linkedListError::BAD_DATA_POINTER);
@@ -73,7 +74,8 @@ linkedListError insertNode(linkedList<string *> *list, string *data) {
     return linkedListError::NO_ERRORS;
 }
 
-linkedListError deleteNode(linkedList<string *> *list, ssize_t index) {
+template<>
+linkedListError deleteNode<string *>(linkedList<string *> *list, ssize_t index) {
     customWarning(list,                                linkedListError::LIST_BAD_POINTER);
     customWarning(index > 0 && index < list->capacity, linkedListError::BAD_INDEX);
     customWarning(list->prev[index] != -1,             linkedListError::BAD_INDEX);
@@ -83,6 +85,7 @@ linkedListError deleteNode(linkedList<string *> *list, ssize_t index) {
     } else {
         list->prev[0] = list->prev[index];
     }
+
     if (list->prev[index] != 0) {
         list->next[list->prev[index]] = list->next[index];
     } else {
@@ -102,7 +105,8 @@ linkedListError deleteNode(linkedList<string *> *list, ssize_t index) {
     return linkedListError::NO_ERRORS;
 }
 
-linkedListError getNodeValue(linkedList<string *> *list, ssize_t index, string **value) {
+template<>
+linkedListError getNodeValue<string *>(linkedList<string *> *list, ssize_t index, string **value) {
     customWarning(list,                                linkedListError::LIST_BAD_POINTER);
     customWarning(index > 0 && index < list->capacity, linkedListError::BAD_INDEX);
     customWarning(list->prev[index] != -1,             linkedListError::BAD_INDEX);
