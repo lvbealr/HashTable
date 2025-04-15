@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     hashTable<string *> hashTable = {};
     initializeHashTable(&hashTable, 2);
 
-    fillHashTableWithRehash(&hashTable, &textData, crc32);
+    fillHashTableWithRehash(&hashTable, &textData, sdbm32Wrapper);
 
     int openFile = open(outputFile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     customWarning(openFile != -1, EXIT_FAILURE);

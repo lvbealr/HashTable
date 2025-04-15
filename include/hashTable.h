@@ -9,9 +9,7 @@
 #include "linkedList.h"
 #include "linkedListAddons.h"
 
-const double MAX_LOAD_FACTOR = 15.0f;
-
-typedef uint32_t (*hashFunction)(string *);
+const double   MAX_LOAD_FACTOR = 15.0f;
 
 template<typename T>
 struct hashTable {
@@ -76,32 +74,32 @@ hashTableError destroyHashTable(hashTable<T> *table) {
 }
 
 template<typename T>
-hashTableError fillHashTableWithRehash(hashTable<T> *table, textData *data, hashFunction hashFunc) {
-    hashTableError error = fillHashTable(table, data, hashFunc);
+hashTableError fillHashTableWithRehash(hashTable<T> *table, textData *data, hashFunctionWrapper hashWrapper) {
+    hashTableError error = fillHashTable(table, data, hashWrapper);
     customWarning(error == hashTableError::NO_ERRORS, hashTableError::HASH_TABLE_FILL_ERROR);
 
-    double currentLoadFactor = double((table->size) / table->capacity);
+    double currentLoadFactor = double(table->size) / double(table->capacity);
 
     while (currentLoadFactor > table->maxLoadFactor) {
-        error = rehashTable(table, hashFunc);
+        error = rehashTable(table, hashWrapper);
 
         if (error != hashTableError::NO_ERRORS) {
             return error;
         }
 
-        currentLoadFactor = double((table->size) / table->capacity);
+        currentLoadFactor = double(table->size) / double(table->capacity);
     }
 
     return hashTableError::NO_ERRORS;
 }
 
 template<typename T>
-hashTableError fillHashTable(hashTable<T> *table, textData *data, hashFunction hashFunc) {
+hashTableError fillHashTable(hashTable<T> *table, textData *data, hashFunctionWrapper hashWrapper) {
     for (size_t line = 0; line < data->lineCount; line++) {
         T newWord = createNode(data->lineArray[line].linePointer, data->lineArray[line].lineSize);
         customWarning(newWord, hashTableError::NODE_CREATION_ERROR);
 
-        uint32_t hashValue = hashFunc(newWord) % table->capacity;
+        uint32_t hashValue = hashWrapper(newWord, SEED) % table->capacity;
 
         linkedListError insertError = insertNode(&table->table[hashValue], newWord);
 
@@ -117,7 +115,7 @@ hashTableError fillHashTable(hashTable<T> *table, textData *data, hashFunction h
 }
 
 template<typename T>
-hashTableError rehashTable(hashTable<T> *table, hashFunction hashFunc) {
+hashTableError rehashTable(hashTable<T> *table, hashFunctionWrapper hashWrapper) {
     size_t newCapacity = table->capacity * 2;
 
     hashTable<T> newTable = {};
@@ -135,7 +133,7 @@ hashTableError rehashTable(hashTable<T> *table, hashFunction hashFunc) {
             T value = list->data[current];
 
             if (value) {
-                uint32_t newHash = hashFunc(value) % newCapacity;
+                uint32_t newHash = hashWrapper(value, SEED) % newCapacity;
 
                 linkedListError insertError = insertNode(&newTable.table[newHash], value);
 
