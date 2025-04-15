@@ -2,25 +2,32 @@
 #define HASH_FUNCTIONS_H_
 
 #include <inttypes.h>
+#include <stdint.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "common.h"
 
-inline uint32_t crc32(string *data) {
-    char  *message = data->data;
-    size_t length  = data->size;
+const size_t SEED = 0;
+const size_t MOD  = 2048;
 
-    uint32_t crc = 0xFFFFFFFF;
+typedef uint32_t (*hashFunctionWrapper)(string *, uint32_t);
 
-    for (size_t i = 0; i < length; i++) {
-        crc ^= (uint32_t)message[i];
+uint32_t crc32Wrapper  (string *data, uint32_t seed);
+uint32_t murmur3Wrapper(string *data, uint32_t seed);
+uint32_t pjw32Wrapper  (string *data, uint32_t seed);
+uint32_t adler32Wrapper(string *data, uint32_t seed);
+uint32_t fnv32Wrapper  (string *data, uint32_t seed);
+uint32_t sdbm32Wrapper (string *data, uint32_t seed);
 
-        for (size_t j = 0; j < 8; j++) {
-            crc = (crc >> 1) ^ (0xEDB88320 & -(crc & 1));
-        }
-    }
+uint32_t crc32  (string *data);
+uint32_t murmur3(string *data, uint32_t seed);
+uint32_t pjw32  (string *data, uint32_t modulo);
+uint32_t adler32(string *data);
+uint32_t fnv32  (string *data);
+uint32_t sdbm32 (string *data);
 
-    return crc ^ 0xFFFFFFFF;
-}
+uint32_t loadWord(const char *p);
+uint32_t rotl32  (uint32_t x, int8_t r);
 
 #endif // HASH_FUNCTIONS_H_
