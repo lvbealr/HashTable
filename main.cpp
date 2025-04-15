@@ -10,8 +10,8 @@
 #include "hashFunctions.h"
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        customPrint(red, bold, bgDefault, "Usage: %s <input-file>\n", argv[0]);
+    if (argc != 3) {
+        customPrint(red, bold, bgDefault, "Usage: %s <input-file> <test-file>\n", argv[0]);
         return EXIT_FAILURE;
     }
 
