@@ -52,6 +52,7 @@ IOError textDataInitialize(const char *fileName, textData *textData) {
     customWarning(textData, IOError::TEXT_DATA_BAD_POINTER);
 
     struct stat fileData = {};
+    
     if (stat(fileName, &fileData) != 0)
         return IOError::FILE_NOT_FOUND;
 
@@ -64,7 +65,6 @@ IOError textDataInitialize(const char *fileName, textData *textData) {
 
     if (openFile == (int)IOError::FILE_NOT_FOUND) {
         FREE_(textData->text);
-
         return IOError::FILE_NOT_FOUND;
     }
 
@@ -73,7 +73,6 @@ IOError textDataInitialize(const char *fileName, textData *textData) {
 
     if (sizeRead != textData->fileSize) {
         FREE_(textData->text);
-
         return IOError::READING_ERROR;
     }
 
@@ -99,7 +98,7 @@ size_t lineCounter(textData *textData) {
     if (!textData || !textData->text || textData->fileSize <= 0)
         return 0;
 
-    size_t lineCount = 1;
+    size_t lineCount = 0;
 
     char *ptr = textData->text;
     char *end = ptr + textData->fileSize;
@@ -107,6 +106,10 @@ size_t lineCounter(textData *textData) {
     while (ptr < end) {
         if (*ptr++ == '\n')
             lineCount++;
+    }
+
+    if (textData->fileSize > 0 && textData->text[textData->fileSize - 1] != '\n') {
+        lineCount++;
     }
 
     return lineCount;
