@@ -16,7 +16,7 @@ const size_t MAX_LINE_SIZE = 256;
                                                                 \
     uint64_t ticks = end - start;                               \
     customPrint(purple, bold, bgDefault,                        \
-    "%-16s: %lu\n", hashFunctionName, ticks);    \
+    "%-16s: %lu\n", hashFunctionName, ticks);                   \
 } while (0)
 
 hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
