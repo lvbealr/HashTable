@@ -3,23 +3,20 @@
 
 #include <string.h>
 
+#include "common.h"
 #include "linkedList.h"
 
-struct string {
-    char  *data  = {};
-    size_t size  = {};
-};
-
-string *createNode(const char *data) {
+string *createNode(char *wordPtr, size_t length) {
     string *newNode = (string *)calloc(1, sizeof(string));
     CHECK_FOR_NULL(newNode, return NULL);
 
-    newNode->size = strlen(data);
+    newNode->size = length;
+
     newNode->data = (char *)calloc(newNode->size + 1, sizeof(char));
 
     CHECK_FOR_NULL(newNode->data, FREE_(newNode); return NULL);
 
-    strncpy(newNode->data, data, newNode->size);
+    strncpy(newNode->data, wordPtr, newNode->size);
     newNode->data[newNode->size] = '\0';
 
     return newNode;
@@ -27,14 +24,18 @@ string *createNode(const char *data) {
 
 template<>
 linkedListError insertNode<string *>(linkedList<string *> *list, string *data) {
-    customWarning(list,                linkedListError::LIST_BAD_POINTER);
-    customWarning(list->freeNode != 0, linkedListError::BAD_CAPACITY);
-    customWarning(data,                linkedListError::BAD_DATA_POINTER);
+    customWarning(list, linkedListError::LIST_BAD_POINTER);
+    customWarning(data, linkedListError::BAD_DATA_POINTER);
+
+    if (list->freeNode == 0) {
+        linkedListError resizeError = resizeList(list);
+        customWarning(resizeError == linkedListError::NO_ERRORS, linkedListError::RESIZE_ERROR);
+    }
 
     ssize_t newNodeIndex = list->freeNode;
+    customWarning(newNodeIndex < list->capacity, linkedListError::BAD_INDEX);
 
     list->freeNode = list->next[newNodeIndex];
-
     list->data[newNodeIndex] = data;
 
     ssize_t insertAfter = list->newIndex;
@@ -49,9 +50,8 @@ linkedListError insertNode<string *>(linkedList<string *> *list, string *data) {
         } else {
             list->next[newNodeIndex]  = list->next[0];
             list->prev[list->next[0]] = newNodeIndex;
-
-            list->prev[newNodeIndex] = 0;
-            list->next[0]            = newNodeIndex;
+            list->prev[newNodeIndex]  = 0;
+            list->next[0] = newNodeIndex;
         }
     } else {
         list->next[newNodeIndex] = list->next[insertAfter];
@@ -63,7 +63,7 @@ linkedListError insertNode<string *>(linkedList<string *> *list, string *data) {
         }
 
         list->prev[newNodeIndex] = insertAfter;
-        list->next[insertAfter] = newNodeIndex;
+        list->next[insertAfter]  = newNodeIndex;
     }
 
     list->size++;
@@ -76,9 +76,9 @@ linkedListError insertNode<string *>(linkedList<string *> *list, string *data) {
 
 template<>
 linkedListError deleteNode<string *>(linkedList<string *> *list, ssize_t index) {
-    customWarning(list,                                linkedListError::LIST_BAD_POINTER);
+    customWarning(list, linkedListError::LIST_BAD_POINTER);
     customWarning(index > 0 && index < list->capacity, linkedListError::BAD_INDEX);
-    customWarning(list->prev[index] != -1,             linkedListError::BAD_INDEX);
+    customWarning(list->prev[index] != -1, linkedListError::BAD_INDEX);
 
     if (list->next[index] != 0) {
         list->prev[list->next[index]] = list->prev[index];
@@ -107,12 +107,18 @@ linkedListError deleteNode<string *>(linkedList<string *> *list, ssize_t index) 
 
 template<>
 linkedListError getNodeValue<string *>(linkedList<string *> *list, ssize_t index, string **value) {
-    customWarning(list,                                linkedListError::LIST_BAD_POINTER);
+    customWarning(list, linkedListError::LIST_BAD_POINTER);
+
     customWarning(index > 0 && index < list->capacity, linkedListError::BAD_INDEX);
     customWarning(list->prev[index] != -1,             linkedListError::BAD_INDEX);
-    customWarning(value,                               linkedListError::BAD_GET_NODE_POINTER);
 
-    *value = list->data[index];
+    customWarning(value, linkedListError::BAD_GET_NODE_POINTER);
+
+    if (list->prev[index] == -1) {
+        *value = NULL;
+    } else {
+        *value = list->data[index];
+    }
 
     verifyLinkedList(list);
 

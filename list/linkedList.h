@@ -29,7 +29,6 @@ struct linkedList {
 };
 
 enum class linkedListError {
-    NO_SUCH_FILE                  = -1,
     NO_ERRORS                     =  0,
     LIST_BAD_POINTER              =  1,
     PREVIOUS_BAD_POINTER          =  2,
@@ -38,12 +37,11 @@ enum class linkedListError {
     BAD_CAPACITY                  =  5,
     BAD_HEAD                      =  6,
     BAD_TAIL                      =  7,
-    NODE_BAD_POINTER              =  8,
-    ROOT_BAD_POINTER              =  9,
-    BAD_INDEX                     = 12,
-    BAD_GET_NODE_POINTER          = 13,
-    BAD_FREE_NODE                 = 14,
-    BAD_DATA_POINTER              = 15
+    BAD_INDEX                     =  8,
+    BAD_GET_NODE_POINTER          =  9,
+    BAD_FREE_NODE                 = 10,
+    BAD_DATA_POINTER              = 11,
+    RESIZE_ERROR                  = 12,
 };
 
 template<typename T>
@@ -179,6 +177,16 @@ linkedListError resizeList(linkedList<T> *list) {
     }
 
     list->capacity = newCapacity;
+
+    return linkedListError::NO_ERRORS;
+}
+
+template<typename T>
+linkedListError destroyNode(T node) {
+    if (node) {
+        FREE_(node->data);
+        FREE_(node);
+    }
 
     return linkedListError::NO_ERRORS;
 }
