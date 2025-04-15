@@ -9,7 +9,7 @@
 #include "linkedList.h"
 #include "linkedListAddons.h"
 
-const double MAX_LOAD_FACTOR = 0.75f;
+const double MAX_LOAD_FACTOR = 15.0f;
 
 typedef uint32_t (*hashFunction)(string *);
 
@@ -82,12 +82,14 @@ hashTableError fillHashTableWithRehash(hashTable<T> *table, textData *data, hash
 
     double currentLoadFactor = double((table->size) / table->capacity);
 
-    if (currentLoadFactor > table->maxLoadFactor) {
+    while (currentLoadFactor > table->maxLoadFactor) {
         error = rehashTable(table, hashFunc);
 
         if (error != hashTableError::NO_ERRORS) {
             return error;
         }
+
+        currentLoadFactor = double((table->size) / table->capacity);
     }
 
     return hashTableError::NO_ERRORS;
@@ -141,6 +143,7 @@ hashTableError rehashTable(hashTable<T> *table, hashFunction hashFunc) {
                     destroyNode(value);
                 } else {
                     list->data[current] = NULL;
+                    newTable.size++;
                 }
             }
 
