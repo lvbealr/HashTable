@@ -2,6 +2,15 @@
 
 ---
 
+<p align="center">
+  <a href="" rel="noopener">
+ <img src="https://i.imgur.com/pJGBHnO.png" alt="struct"></a>
+</p>
+
+---
+
+---
+
 `MAX_LOAD_FACTOR = 15`
 
 <p align="center">
