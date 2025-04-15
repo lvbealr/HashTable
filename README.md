@@ -1,13 +1,14 @@
-# HashTable
+<p align="center">
+  <a href="" rel="noopener">
+ <img src="https://i.imgur.com/krVMYr2.png" alt="Project Logo"></a>
+</p>
 
 ---
 
 <p align="center">
   <a href="" rel="noopener">
- <img src="https://i.imgur.com/pJGBHnO.png" alt="struct"></a>
+ <img src="https://i.imgur.com/4dyOrbF.jpeg" alt="struct"></a>
 </p>
-
----
 
 ---
 
