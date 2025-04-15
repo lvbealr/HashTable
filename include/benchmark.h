@@ -1,22 +1,35 @@
 #ifndef BENCHMARK_H_
 #define BENCHMARK_H_
 
+#include <immintrin.h>
+
 #include "IO.h"
 #include "hashTable.h"
 #include "hashFunctions.h"
 
 const size_t MAX_LINE_SIZE = 256;
 
+#define TIME(...) do {                                          \
+    uint64_t start = __rdtsc();                                 \
+    __VA_ARGS__                                                 \
+    uint64_t end   = __rdtsc();                                 \
+                                                                \
+    uint64_t ticks = end - start;                               \
+    customPrint(purple, bold, bgDefault,                        \
+    "%-16s: %lu\n", hashFunctionName, ticks);    \
+} while (0)
+
 hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
-                                  const char *inputFile,
-                                  const char *testFile,
-                                  const char *outputFile);
+                                  const char *inputFile, const char *testFile, const char *outputFile,
+                                  const char *hashFunctionName);
 
 hashTableError saveHashTableToFile(hashTable<string *> *table, const char *outputFile);
 hashTableError searchData         (hashTable<string *> *table, textData *testData, hashFunctionWrapper hashWrapper);
 hashTableError searchString       (hashTable<string *> *table, string *data,       hashFunctionWrapper hashWrapper);
 
-hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper, const char *inputFile, const char *testFile, const char *outputFile) {
+hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
+                                  const char *inputFile, const char *testFile, const char *outputFile,
+                                  const char *hashFunctionName) {
     customWarning(inputFile,  hashTableError::FILE_NOT_FOUND);
     customWarning(testFile,   hashTableError::FILE_NOT_FOUND);
     customWarning(outputFile, hashTableError::FILE_NOT_FOUND);
@@ -35,8 +48,10 @@ hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper, const char *i
     customWarning(saveHashTableToFile(&hashTable, outputFile) == hashTableError::NO_ERRORS,
                   hashTableError::SAVE_HASH_TABLE_ERROR);
 
-    customWarning(searchData(&hashTable, &testData, hashWrapper) == hashTableError::NO_ERRORS,
+    TIME(
+            customWarning(searchData(&hashTable, &testData, hashWrapper) == hashTableError::NO_ERRORS,
                   hashTableError::SEARCH_DATA_ERROR);
+    );
 
     textDataDestruct(&inputData);
     textDataDestruct(&testData);
