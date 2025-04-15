@@ -22,11 +22,16 @@ struct hashTable {
 };
 
 enum class hashTableError {
-    NO_ERRORS               = 0,
-    HASH_TABLE_BAD_POINTER  = 1,
-    NODE_CREATION_ERROR     = 2,
-    NODE_INSERTION_ERROR    = 3,
-    HASH_TABLE_FILL_ERROR   = 4,
+    FILE_NOT_FOUND          = -1,
+    NO_ERRORS               =  0,
+    HASH_TABLE_BAD_POINTER  =  1,
+    NODE_CREATION_ERROR     =  2,
+    NODE_INSERTION_ERROR    =  3,
+    HASH_TABLE_FILL_ERROR   =  4,
+    SAVE_HASH_TABLE_ERROR   =  5,
+    SEARCH_DATA_ERROR       =  6,
+    BUFFER_ERROR            =  7,
+    TEXT_DATA_BAD_POINTER   =  8
 };
 
 template<typename T>
