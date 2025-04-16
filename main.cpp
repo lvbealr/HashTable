@@ -32,7 +32,6 @@ int main(int argc, char *argv[]) {
             benchmarkHashTable(fnv32Wrapper,    inputFile, testFile, "fnv32.csv",   "fnv32");
             benchmarkHashTable(murmur3Wrapper,  inputFile, testFile, "murmur3.csv", "murmur3");
             benchmarkHashTable(crc32Wrapper,    inputFile, testFile, "crc32.csv",   "crc32");
-            benchmarkHashTable(crc32SSEWrapper, inputFile, testFile, "crc32SSE.csv", "crc32SSE");
     )
 
     return EXIT_SUCCESS;

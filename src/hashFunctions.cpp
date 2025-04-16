@@ -10,54 +10,50 @@ uint32_t crc32Wrapper(string *data, uint32_t seed) {
 }
 
 uint32_t crc32(string *data) {
-    char  *message = data->data;
-    size_t length  = data->size;
+    #ifndef OPTIMIZE_CRC32
+        char  *message = data->data;
+        size_t length  = data->size;
 
-    uint32_t crc = 0xFFFFFFFF;
+        uint32_t crc = 0xFFFFFFFF;
 
-    for (size_t i = 0; i < length; i++) {
-        crc ^= (uint32_t)message[i];
+        for (size_t i = 0; i < length; i++) {
+            crc ^= (uint32_t)message[i];
 
-        for (size_t j = 0; j < 8; j++) {
-            crc = (crc >> 1) ^ (0x82F63B78 & -(crc & 1)); // crc32 - castagnoli
+            for (size_t j = 0; j < 8; j++) {
+                crc = (crc >> 1) ^ (0x82F63B78 & -(crc & 1)); // crc32 - castagnoli
+            }
         }
-    }
 
-    return crc ^ 0xFFFFFFFF;
-}
+        return crc ^ 0xFFFFFFFF;
+    #else
+        uint32_t crc32 = 0xFFFFFFFF;
 
-uint32_t crc32SSEWrapper(string *data, uint32_t seed) {
-    return crc32SSE(data);
-}
+        unsigned char *buffer = (unsigned char *)data->data;
+        size_t         length = data->size;
 
-uint32_t crc32SSE(string *data) {
-    uint32_t crc32 = 0xFFFFFFFF;
+        size_t quotient = length / 8;
 
-    unsigned char *buffer = (unsigned char *)data->data;
-    size_t         length = data->size;
+        while (quotient--) {
+            crc32 = _mm_crc32_u64(crc32, *(uint64_t *)buffer);
+            buffer += 8;
+        }
 
-    size_t quotient = length / 8;
+        if (length & 4) {
+            crc32 = _mm_crc32_u32(crc32, *(uint32_t *)buffer);
+            buffer += 4;
+        }
 
-    while (quotient--) {
-        crc32 = _mm_crc32_u64(crc32, *(uint64_t *)buffer);
-        buffer += 8;
-    }
+        if (length & 2) {
+            crc32 = _mm_crc32_u16(crc32, *(uint16_t *)buffer);
+            buffer += 2;
+        }
 
-    if (length & 4) {
-        crc32 = _mm_crc32_u32(crc32, *(uint32_t *)buffer);
-        buffer += 4;
-    }
+        if (length & 1) {
+            crc32 = _mm_crc32_u8(crc32, *(uint8_t *)buffer);
+        }
 
-    if (length & 2) {
-        crc32 = _mm_crc32_u16(crc32, *(uint16_t *)buffer);
-        buffer += 2;
-    }
-
-    if (length & 1) {
-        crc32 = _mm_crc32_u8(crc32, *(uint8_t *)buffer);
-    }
-
-    return crc32 ^ 0xFFFFFFFF;
+        return crc32 ^ 0xFFFFFFFF;
+    #endif
 }
 
 uint32_t loadWord(const char *p) {

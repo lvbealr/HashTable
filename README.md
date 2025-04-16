@@ -104,44 +104,67 @@ FIRST STEP: try to optimize crc32 by intrinsics
 ```shell
 Hash Function   : Time (in ticks):
 -------------------------------------------------
-pjw32           : 29643795
-adler32         : 8165153
-sdbm32          : 4751951
-fnv32           : 4642365
-murmur3         : 6266542
-crc32           : 7542501
-crc32SSE        : 5871276
+pjw32           : 30791079
+adler32         : 8457270
+sdbm32          : 4503297
+fnv32           : 4405018
+murmur3         : 6389746
+crc32           : 4586641
 -------------------------------------------------
 ```
 
 ```c++
-uint32_t crc32SSE(string *data) {
-    uint32_t crc32 = 0xFFFFFFFF;
+uint32_t crc32(string *data) {
+    #ifndef OPTIMIZE_CRC32
+        char  *message = data->data;
+        size_t length  = data->size;
 
-    unsigned char *buffer = (unsigned char *)data->data;
-    size_t         length = data->size;
+        uint32_t crc = 0xFFFFFFFF;
 
-    size_t quotient = length / 8;
+        for (size_t i = 0; i < length; i++) {
+            crc ^= (uint32_t)message[i];
 
-    while (quotient--) {
-        crc32 = _mm_crc32_u64(crc32, *(uint64_t *)buffer);
-        buffer += 8;
-    }
+            for (size_t j = 0; j < 8; j++) {
+                crc = (crc >> 1) ^ (0x82F63B78 & -(crc & 1)); // crc32 - castagnoli
+            }
+        }
 
-    if (length & 4) {
-        crc32 = _mm_crc32_u32(crc32, *(uint32_t *)buffer);
-        buffer += 4;
-    }
+        return crc ^ 0xFFFFFFFF;
+    #else
+        uint32_t crc32 = 0xFFFFFFFF;
 
-    if (length & 2) {
-        crc32 = _mm_crc32_u16(crc32, *(uint16_t *)buffer);
-        buffer += 2;
-    }
+        unsigned char *buffer = (unsigned char *)data->data;
+        size_t         length = data->size;
 
-    if (length & 1) {
-        crc32 = _mm_crc32_u8(crc32, *(uint8_t *)buffer);
-    }
+        size_t quotient = length / 8;
 
-    return crc32 ^ 0xFFFFFFFF;
+        while (quotient--) {
+            crc32 = _mm_crc32_u64(crc32, *(uint64_t *)buffer);
+            buffer += 8;
+        }
+
+        if (length & 4) {
+            crc32 = _mm_crc32_u32(crc32, *(uint32_t *)buffer);
+            buffer += 4;
+        }
+
+        if (length & 2) {
+            crc32 = _mm_crc32_u16(crc32, *(uint16_t *)buffer);
+            buffer += 2;
+        }
+
+        if (length & 1) {
+            crc32 = _mm_crc32_u8(crc32, *(uint8_t *)buffer);
+        }
+
+        return crc32 ^ 0xFFFFFFFF;
+    #endif
 }
 ```
+
+OK! (optimized with intrinsics) 
+<p align="center">
+  <a href="" rel="noopener">
+ <img src="https://i.imgur.com/45ZiKaB.png" alt="optimizecrc32"></a>
+</p>
+
