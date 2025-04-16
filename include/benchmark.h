@@ -1,7 +1,9 @@
 #ifndef BENCHMARK_H_
 #define BENCHMARK_H_
 
+#include <fcntl.h>
 #include <immintrin.h>
+#include <unistd.h>
 
 #include "IO.h"
 #include "hashTable.h"
@@ -25,7 +27,6 @@ hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
 
 hashTableError saveHashTableToFile(hashTable<string *> *table, const char *outputFile);
 hashTableError searchData         (hashTable<string *> *table, textData *testData, hashFunctionWrapper hashWrapper);
-hashTableError searchString       (hashTable<string *> *table, string *data,       hashFunctionWrapper hashWrapper);
 
 hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
                                   const char *inputFile, const char *testFile, const char *outputFile,
@@ -108,29 +109,6 @@ hashTableError searchData(hashTable<string *> *table, textData *testData, hashFu
     }
 
     return hashTableError::NO_ERRORS;
-}
-
-hashTableError searchString(hashTable<string *> *table, string *data, hashFunctionWrapper hashWrapper) {
-    customWarning(table, hashTableError::HASH_TABLE_BAD_POINTER);
-    customWarning(data,  hashTableError::TEXT_DATA_BAD_POINTER);
-
-    uint32_t hashValue = hashWrapper(data, SEED) % table->capacity;
-
-    linkedList<string *> *list = &table->table[hashValue];
-
-    ssize_t current = list->next[0];
-
-    while (current != 0) {
-        string *value = list->data[current];
-
-        if (value && strcmp(value->data, data->data) == 0) {
-            return hashTableError::NO_ERRORS;
-        }
-
-        current = list->next[current];
-    }
-
-    return hashTableError::SEARCH_DATA_ERROR;
 }
 
 #endif // BENCHMARK_H_

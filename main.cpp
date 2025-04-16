@@ -1,11 +1,6 @@
-#include <fcntl.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
 
 #include "benchmark.h"
-#include "IO.h"
 #include "hashTable.h"
 #include "hashFunctions.h"
 
