@@ -95,6 +95,8 @@ crc32           : 7349910
 -------------------------------------------------
 ```
 
+---
+
 FIRST STEP: try to optimize crc32 by intrinsics
 <p align="center">
   <a href="" rel="noopener">
@@ -112,6 +114,8 @@ murmur3         : 6389746
 crc32           : 4586641
 -------------------------------------------------
 ```
+
+---
 
 ```c++
 uint32_t crc32(string *data) {
@@ -168,3 +172,51 @@ OK! (optimized with intrinsics)
  <img src="https://i.imgur.com/45ZiKaB.png" alt="optimizecrc32"></a>
 </p>
 
+---
+
+```nasm
+global myStrcmp
+
+section .text
+
+myStrcmp:
+    xor rdx, rdx
+    xor rax, rax
+
+.loop:
+    movdqu xmm1, [rdi + rdx]
+    pcmpistri xmm1, [rsi + rdx], 0x18
+
+    jc .diff
+    jz .equal
+
+    add rdx, 16
+    jmp .loop
+
+.equal:
+    xor eax, eax
+    ret
+
+.diff:
+    lea r9, [rdx + rcx]
+    movzx eax, byte [rdi + r9]
+    movzx r8d, byte [rsi + r9]
+    sub eax, r8d
+    ret
+```
+<p align="center">
+  <a href="" rel="noopener">
+ <img src="https://i.imgur.com/wFeEK8J.png" alt="optimizestrcmp"></a>
+</p>
+
+```shell
+Hash Function   : Time (in ticks):
+-------------------------------------------------
+pjw32           : 17755750
+adler32         : 6446420
+sdbm32          : 4195657
+fnv32           : 3930603
+murmur3         : 4325159
+crc32           : 4158028
+-------------------------------------------------
+```

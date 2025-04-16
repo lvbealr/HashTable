@@ -9,6 +9,10 @@
 #include "linkedList.h"
 #include "linkedListAddons.h"
 
+#ifdef OPTIMIZE_STRCMP
+    extern "C" int myStrcmp(const char *a, const char *b);
+#endif
+
 const double   MAX_LOAD_FACTOR = 15.0f;
 
 template<typename T>
@@ -158,6 +162,29 @@ hashTableError rehashTable(hashTable<T> *table, hashFunctionWrapper hashWrapper)
     *table = newTable;
 
     return hashTableError::NO_ERRORS;
+}
+
+hashTableError searchString(hashTable<string *> *table, string *data, hashFunctionWrapper hashWrapper) {
+    customWarning(table, hashTableError::HASH_TABLE_BAD_POINTER);
+    customWarning(data,  hashTableError::TEXT_DATA_BAD_POINTER);
+
+    uint32_t hashValue = hashWrapper(data, SEED) % table->capacity;
+
+    linkedList<string *> *list = &table->table[hashValue];
+
+    ssize_t current = list->next[0];
+
+    while (current != 0) {
+        string *value = list->data[current];
+
+        if (value && myStrcmp(value->data, data->data) == 0) {
+            return hashTableError::NO_ERRORS;
+        }
+
+        current = list->next[current];
+    }
+
+    return hashTableError::SEARCH_DATA_ERROR;
 }
 
 #endif // HASH_TABLE_H_
