@@ -1,3 +1,4 @@
+#include <immintrin.h>
 #include <stdint.h>
 #include <time.h>
 
@@ -18,11 +19,45 @@ uint32_t crc32(string *data) {
         crc ^= (uint32_t)message[i];
 
         for (size_t j = 0; j < 8; j++) {
-            crc = (crc >> 1) ^ (0xEDB88320 & -(crc & 1));
+            crc = (crc >> 1) ^ (0x82F63B78 & -(crc & 1)); // crc32 - castagnoli
         }
     }
 
     return crc ^ 0xFFFFFFFF;
+}
+
+uint32_t crc32SSEWrapper(string *data, uint32_t seed) {
+    return crc32SSE(data);
+}
+
+uint32_t crc32SSE(string *data) {
+    uint32_t crc32 = 0xFFFFFFFF;
+
+    unsigned char *buffer = (unsigned char *)data->data;
+    size_t         length = data->size;
+
+    size_t quotient = length / 8;
+
+    while (quotient--) {
+        crc32 = _mm_crc32_u64(crc32, *(uint64_t *)buffer);
+        buffer += 8;
+    }
+
+    if (length & 4) {
+        crc32 = _mm_crc32_u32(crc32, *(uint32_t *)buffer);
+        buffer += 4;
+    }
+
+    if (length & 2) {
+        crc32 = _mm_crc32_u16(crc32, *(uint16_t *)buffer);
+        buffer += 2;
+    }
+
+    if (length & 1) {
+        crc32 = _mm_crc32_u8(crc32, *(uint8_t *)buffer);
+    }
+
+    return crc32 ^ 0xFFFFFFFF;
 }
 
 uint32_t loadWord(const char *p) {
@@ -85,7 +120,6 @@ uint32_t murmur3(string *data, uint32_t seed) {
 
     return h;
 }
-
 
 uint32_t pjw32Wrapper(string *data, uint32_t seed) {
     return pjw32(data, MOD);

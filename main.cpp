@@ -26,12 +26,13 @@ int main(int argc, char *argv[]) {
     const char *testFile   = argv[2];
 
     RUN_BENCHMARKS(
-            benchmarkHashTable(pjw32Wrapper,   inputFile, testFile, "pjw32.csv",   "pjw32");
-            benchmarkHashTable(adler32Wrapper, inputFile, testFile, "adler32.csv", "adler32");
-            benchmarkHashTable(sdbm32Wrapper,  inputFile, testFile, "sdbm32.csv",  "sdbm32");
-            benchmarkHashTable(fnv32Wrapper,   inputFile, testFile, "fnv32.csv",   "fnv32");
-            benchmarkHashTable(murmur3Wrapper, inputFile, testFile, "murmur3.csv", "murmur3");
-            benchmarkHashTable(crc32Wrapper,   inputFile, testFile, "crc32.csv",   "crc32");
+            benchmarkHashTable(pjw32Wrapper,    inputFile, testFile, "pjw32.csv",   "pjw32");
+            benchmarkHashTable(adler32Wrapper,  inputFile, testFile, "adler32.csv", "adler32");
+            benchmarkHashTable(sdbm32Wrapper,   inputFile, testFile, "sdbm32.csv",  "sdbm32");
+            benchmarkHashTable(fnv32Wrapper,    inputFile, testFile, "fnv32.csv",   "fnv32");
+            benchmarkHashTable(murmur3Wrapper,  inputFile, testFile, "murmur3.csv", "murmur3");
+            benchmarkHashTable(crc32Wrapper,    inputFile, testFile, "crc32.csv",   "crc32");
+            benchmarkHashTable(crc32SSEWrapper, inputFile, testFile, "crc32SSE.csv", "crc32SSE");
     )
 
     return EXIT_SUCCESS;
