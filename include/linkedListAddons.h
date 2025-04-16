@@ -69,7 +69,9 @@ linkedListError insertNode<string *>(linkedList<string *> *list, string *data) {
     list->size++;
     list->newIndex = newNodeIndex;
 
-    verifyLinkedList(list);
+    #ifndef NDEBUG
+        verifyLinkedList(list);
+    #endif
 
     return linkedListError::NO_ERRORS;
 }
@@ -100,7 +102,9 @@ linkedListError deleteNode<string *>(linkedList<string *> *list, ssize_t index) 
 
     list->size--;
 
-    verifyLinkedList(list);
+    #ifndef NDEBUG
+        verifyLinkedList(list);
+    #endif
 
     return linkedListError::NO_ERRORS;
 }
@@ -120,7 +124,9 @@ linkedListError getNodeValue<string *>(linkedList<string *> *list, ssize_t index
         *value = list->data[index];
     }
 
-    verifyLinkedList(list);
+    #ifndef NDEBUG
+        verifyLinkedList(list);
+    #endif
 
     return linkedListError::NO_ERRORS;
 }

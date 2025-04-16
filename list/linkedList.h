@@ -103,6 +103,7 @@ linkedListError destroyLinkedList(linkedList<T> *list) {
     return linkedListError::NO_ERRORS;
 }
 
+#ifndef NDEBUG
 template<typename T>
 linkedListError verifyLinkedList(linkedList<T> *list) {
     customWarning(list, linkedListError::LIST_BAD_POINTER);
@@ -125,6 +126,7 @@ linkedListError verifyLinkedList(linkedList<T> *list) {
 
     return linkedListError::NO_ERRORS;
 }
+#endif
 
 template<typename T>
 linkedListError resizeList(linkedList<T> *list) {
@@ -177,6 +179,10 @@ linkedListError resizeList(linkedList<T> *list) {
     }
 
     list->capacity = newCapacity;
+
+    #ifndef NDEBUG
+        verifyLinkedList(list);
+    #endif
 
     return linkedListError::NO_ERRORS;
 }
