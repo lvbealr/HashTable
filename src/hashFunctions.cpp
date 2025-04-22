@@ -143,17 +143,63 @@ uint32_t adler32Wrapper(string *data, uint32_t seed) {
     return adler32(data);
 }
 
+#include <string.h>
+
 uint32_t adler32(string *data) {
-    char  *message = data->data;
-    size_t length  = data->size;
+    const char* message = data->data;
+    size_t length = data->size;
 
     uint32_t a = 1;
     uint32_t b = 0;
 
+    #ifdef OPTIMIZE_ADLER32
+
+    size_t i = 0;
+
+    for (; i + 4 <= length; i += 4) {
+        uint32_t bytes;
+        memcpy(&bytes, message + i, 4);
+
+        __asm__ volatile (
+                "mov %1, %%ecx\n"
+                "movzbl %%cl, %%ecx\n"
+                "addl %%ecx, %0\n"
+                "addl %0, %2\n"
+                "mov %1, %%ecx\n"
+                "shr $8, %%ecx\n"
+                "movzbl %%cl, %%ecx\n"
+                "addl %%ecx, %0\n"
+                "addl %0, %2\n"
+                "mov %1, %%ecx\n"
+                "shr $16, %%ecx\n"
+                "movzbl %%cl, %%ecx\n"
+                "addl %%ecx, %0\n"
+                "addl %0, %2\n"
+                "mov %1, %%ecx\n"
+                "shr $24, %%ecx\n"
+                "movzbl %%cl, %%ecx\n"
+                "addl %%ecx, %0\n"
+                "addl %0, %2\n"
+                : "+r"(a), "+r"(bytes), "+r"(b)
+                :
+                : "ecx"
+                );
+    }
+
+    for (; i < length; i++) {
+        a = (a + (uint8_t)(message[i])) % 65521;
+        b = (b + a) % 65521;
+    }
+
+    a %= 65521;
+    b %= 65521;
+
+    #else
     for (size_t i = 0; i < length; i++) {
         a = (a + (uint8_t)(message[i])) % 65521;
         b = (b + a) % 65521;
     }
+    #endif
 
     return (b << 16) + a;
 }
