@@ -9,11 +9,7 @@
 #include "linkedList.h"
 #include "linkedListAddons.h"
 
-#ifdef OPTIMIZE_STRCMP
-    extern "C" int myStrcmp(const char *a, const char *b);
-#endif
-
-const double   MAX_LOAD_FACTOR = 15.0f;
+const double MAX_LOAD_FACTOR = 15.0f;
 
 template<typename T>
 struct hashTable {
@@ -108,7 +104,7 @@ hashTableError fillHashTable(hashTable<T> *table, textData *data, hashFunctionWr
         T newWord = createNode(data->lineArray[line].linePointer, data->lineArray[line].lineSize);
         customWarning(newWord, hashTableError::NODE_CREATION_ERROR);
 
-        uint32_t hashValue = hashWrapper(newWord, SEED) % table->capacity;
+        uint32_t hashValue = hashWrapper(newWord, SEED) & (table->capacity - 1);
 
         linkedListError insertError = insertNode(&table->table[hashValue], newWord);
 
@@ -130,9 +126,7 @@ hashTableError rehashTable(hashTable<T> *table, hashFunctionWrapper hashWrapper)
     hashTable<T> newTable = {};
 
     hashTableError initError = initializeHashTable(&newTable, newCapacity);
-    if (initError != hashTableError::NO_ERRORS) {
-        return initError;
-    }
+    customWarning(initError == hashTableError::NO_ERRORS, hashTableError::HASH_TABLE_FILL_ERROR);
 
     for (size_t i = 0; i < table->capacity; i++) {
         linkedList<T> *list    = &table->table[i];
@@ -164,6 +158,16 @@ hashTableError rehashTable(hashTable<T> *table, hashFunctionWrapper hashWrapper)
     return hashTableError::NO_ERRORS;
 }
 
+inline int fastStrcmp(const char *a, const char *b) {
+    __m256i va = _mm256_loadu_si256((const __m256i *)a);
+    __m256i vb = _mm256_loadu_si256((const __m256i *)b);
+
+    __m256i  cmp  = _mm256_cmpeq_epi8(va, vb);
+    uint32_t mask = _mm256_movemask_epi8(cmp);
+
+    return (mask != 0xFFFFFFFF);
+}
+
 hashTableError searchString(hashTable<string *> *table, string *data, hashFunctionWrapper hashWrapper) {
     customWarning(table, hashTableError::HASH_TABLE_BAD_POINTER);
     customWarning(data,  hashTableError::TEXT_DATA_BAD_POINTER);
@@ -177,9 +181,15 @@ hashTableError searchString(hashTable<string *> *table, string *data, hashFuncti
     while (current != 0) {
         string *value = list->data[current];
 
-        if (value && myStrcmp(value->data, data->data) == 0) {
+        #ifdef OPTIMIZE_STRCMP
+            #define strcmp fastStrcmp
+        #endif
+
+        if (value && strcmp(value->data, data->data) == 0) {
             return hashTableError::NO_ERRORS;
         }
+
+        #undef strcmp
 
         current = list->next[current];
     }
