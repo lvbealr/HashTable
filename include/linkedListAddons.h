@@ -6,24 +6,28 @@
 #include "common.h"
 #include "linkedList.h"
 
-string *createNode(char *wordPtr, size_t length) {
-    string *newNode = (string *)calloc(1, sizeof(string));
-    CHECK_FOR_NULL(newNode, return NULL);
+#ifdef OPTIMIZE_CREATE_NODE
+    extern "C" string *createNode(char *wordPtr, size_t length);
+#else
+    string *createNode(char *wordPtr, size_t length) {
+        string *newNode = (string *)calloc(1, sizeof(string));
+        CHECK_FOR_NULL(newNode, return NULL);
 
-    newNode->size = length;
+        newNode->size = length;
 
-    newNode->data = (char *)calloc(newNode->size + 1, sizeof(char));
+        newNode->data = (char *)calloc(newNode->size + 1, sizeof(char));
 
-    CHECK_FOR_NULL(newNode->data, FREE_(newNode); return NULL);
+        CHECK_FOR_NULL(newNode->data, FREE_(newNode); return NULL);
 
-    strncpy(newNode->data, wordPtr, newNode->size);
-    newNode->data[newNode->size] = '\0';
+        strncpy(newNode->data, wordPtr, newNode->size);
+        newNode->data[newNode->size] = '\0';
 
-    return newNode;
-}
+        return newNode;
+    }
+#endif
 
 template<>
-linkedListError insertNode<string *>(linkedList<string *> *list, string *data) {
+linkedListError insertNode<string*>(linkedList<string*>* list, string* data) {
     customWarning(list, linkedListError::LIST_BAD_POINTER);
     customWarning(data, linkedListError::BAD_DATA_POINTER);
 
@@ -40,30 +44,22 @@ linkedListError insertNode<string *>(linkedList<string *> *list, string *data) {
 
     ssize_t insertAfter = list->newIndex;
 
-    if (insertAfter == 0) {
-        if (list->next[0] == 0) {
-            list->next[0] = newNodeIndex;
-            list->prev[0] = newNodeIndex;
+    list->next[newNodeIndex] = list->next[insertAfter];
+    list->prev[newNodeIndex] = insertAfter;
 
-            list->next[newNodeIndex] = 0;
-            list->prev[newNodeIndex] = 0;
-        } else {
-            list->next[newNodeIndex]  = list->next[0];
-            list->prev[list->next[0]] = newNodeIndex;
-            list->prev[newNodeIndex]  = 0;
-            list->next[0] = newNodeIndex;
-        }
+    if (list->next[insertAfter] != 0) {
+        list->prev[list->next[insertAfter]] = newNodeIndex;
     } else {
-        list->next[newNodeIndex] = list->next[insertAfter];
+        list->prev[0] = newNodeIndex;
+    }
 
-        if (list->next[insertAfter] != 0) {
-            list->prev[list->next[insertAfter]] = newNodeIndex;
-        } else {
-            list->prev[0] = newNodeIndex;
+    list->next[insertAfter] = newNodeIndex;
+
+    if (insertAfter == 0) {
+        list->prev[newNodeIndex] = 0;
+        if (list->next[0] == newNodeIndex && list->prev[0] == newNodeIndex) {
+            list->next[newNodeIndex] = 0;
         }
-
-        list->prev[newNodeIndex] = insertAfter;
-        list->next[insertAfter]  = newNodeIndex;
     }
 
     list->size++;
