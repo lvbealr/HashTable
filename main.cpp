@@ -4,11 +4,9 @@
 #include "hashTable.h"
 #include "hashFunctions.h"
 
+// TODO move to func
 #define RUN_BENCHMARKS(...) {                                                                       \
-    customPrint(lightblue, bold, bgDefault, "\n%-16s: Time (in ticks):\n", "Hash Function");        \
-    customPrint(lightblue, bold, bgDefault, "-------------------------------------------------\n"); \
     __VA_ARGS__                                                                                     \
-    customPrint(lightblue, bold, bgDefault, "-------------------------------------------------\n"); \
 }
 
 int main(int argc, char *argv[]) {
@@ -20,13 +18,15 @@ int main(int argc, char *argv[]) {
     const char *inputFile  = argv[1];
     const char *testFile   = argv[2];
 
+    // TODO (optional) pass hash func as a template parameter
+
     RUN_BENCHMARKS(
-            benchmarkHashTable(pjw32Wrapper,    inputFile, testFile, "pjw32.csv",   "pjw32");
-            benchmarkHashTable(adler32Wrapper,  inputFile, testFile, "adler32.csv", "adler32");
-            benchmarkHashTable(sdbm32Wrapper,   inputFile, testFile, "sdbm32.csv",  "sdbm32");
-            benchmarkHashTable(fnv32Wrapper,    inputFile, testFile, "fnv32.csv",   "fnv32");
-            benchmarkHashTable(murmur3Wrapper,  inputFile, testFile, "murmur3.csv", "murmur3");
-            benchmarkHashTable(crc32Wrapper,    inputFile, testFile, "crc32.csv",   "crc32");
+        benchmarkHashTable(pjw32Wrapper,    inputFile, testFile, "pjw32.csv",   "pjw32");
+        benchmarkHashTable(adler32Wrapper,  inputFile, testFile, "adler32.csv", "adler32");
+        benchmarkHashTable(sdbm32Wrapper,   inputFile, testFile, "sdbm32.csv",  "sdbm32");
+        benchmarkHashTable(fnv32Wrapper,    inputFile, testFile, "fnv32.csv",   "fnv32");
+        benchmarkHashTable(murmur3Wrapper,  inputFile, testFile, "murmur3.csv", "murmur3");
+        benchmarkHashTable(crc32Wrapper,    inputFile, testFile, "crc32.csv", "crc32");
     )
 
     return EXIT_SUCCESS;
