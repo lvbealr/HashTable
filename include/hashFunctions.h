@@ -13,16 +13,16 @@ const size_t MOD  = 2048;
 
 typedef uint32_t (*hashFunctionWrapper)(string *, uint32_t);
 
+// TODO remove wrapper functions
 uint32_t crc32Wrapper   (string *data, uint32_t seed);
-uint32_t crc32SSEWrapper(string *data, uint32_t seed);
 uint32_t murmur3Wrapper (string *data, uint32_t seed);
 uint32_t pjw32Wrapper   (string *data, uint32_t seed);
 uint32_t adler32Wrapper (string *data, uint32_t seed);
 uint32_t fnv32Wrapper   (string *data, uint32_t seed);
 uint32_t sdbm32Wrapper  (string *data, uint32_t seed);
 
+// TODO do not pass seed but use it as a const variable
 uint32_t crc32   (string *data);
-uint32_t crc32SSE(string *data);
 uint32_t murmur3 (string *data, uint32_t seed);
 uint32_t pjw32   (string *data, uint32_t modulo);
 uint32_t adler32 (string *data);
