@@ -104,28 +104,28 @@ linkedListError destroyLinkedList(linkedList<T> *list) {
 }
 
 #ifndef NDEBUG
-template<typename T>
-linkedListError verifyLinkedList(linkedList<T> *list) {
-    customWarning(list, linkedListError::LIST_BAD_POINTER);
+    template<typename T>
+    linkedListError verifyLinkedList(linkedList<T> *list) {
+        customWarning(list, linkedListError::LIST_BAD_POINTER);
+    
+        customWarning(list->data, linkedListError::DATA_BAD_POINTER);
+        customWarning(list->prev, linkedListError::PREVIOUS_BAD_POINTER);
+        customWarning(list->next, linkedListError::NEXT_BAD_POINTER);
 
-    customWarning(list->data, linkedListError::DATA_BAD_POINTER);
-    customWarning(list->prev, linkedListError::PREVIOUS_BAD_POINTER);
-    customWarning(list->next, linkedListError::NEXT_BAD_POINTER);
+        customWarning(list->capacity >= 0, linkedListError::BAD_CAPACITY);
 
-    customWarning(list->capacity >= 0, linkedListError::BAD_CAPACITY);
+        customWarning(list->next[0] >= 0 && list->next[0] < list->capacity, linkedListError::BAD_HEAD);
+        customWarning(list->prev[0] >= 0 && list->prev[0] < list->capacity, linkedListError::BAD_TAIL);
 
-    customWarning(list->next[0] >= 0 && list->next[0] < list->capacity, linkedListError::BAD_HEAD);
-    customWarning(list->prev[0] >= 0 && list->prev[0] < list->capacity, linkedListError::BAD_TAIL);
+        ssize_t freeIndex = list->freeNode;
 
-    ssize_t freeIndex = list->freeNode;
+        while (freeIndex) {
+            customWarning(list->prev[freeIndex] == -1, linkedListError::BAD_FREE_NODE);
+            freeIndex = list->next[freeIndex];
+        }
 
-    while (freeIndex) {
-        customWarning(list->prev[freeIndex] == -1, linkedListError::BAD_FREE_NODE);
-        freeIndex = list->next[freeIndex];
+        return linkedListError::NO_ERRORS;
     }
-
-    return linkedListError::NO_ERRORS;
-}
 #endif
 
 template<typename T>
