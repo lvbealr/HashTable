@@ -46,12 +46,15 @@ hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
 
     fillHashTableWithRehash(&hashTable, &inputData, hashWrapper);
 
-    customWarning(saveHashTableToFile(&hashTable, outputFile) == hashTableError::NO_ERRORS,
-                  hashTableError::SAVE_HASH_TABLE_ERROR);
+    hashTableError saveStatus = saveHashTableToFile(&hashTable, outputFile);
+    customWarning(saveStatus == hashTableError::NO_ERRORS, hashTableError::SAVE_HASH_TABLE_ERROR);
 
     TIME(
-            customWarning(searchData(&hashTable, &testData, hashWrapper) == hashTableError::NO_ERRORS,
-                  hashTableError::SEARCH_DATA_ERROR);
+            for (size_t i = 0; i < 1000; i++) {
+                hashTableError searchStatus = searchData(&hashTable, &testData, hashWrapper);
+                customWarning(searchStatus == hashTableError::NO_ERRORS, hashTableError::SEARCH_DATA_ERROR);
+            }
+
     );
 
     textDataDestruct(&inputData);
@@ -70,7 +73,7 @@ hashTableError saveHashTableToFile(hashTable<string *> *table, const char *outpu
     customWarning(openFile != (int)hashTableError::FILE_NOT_FOUND, hashTableError::FILE_NOT_FOUND);
 
     char *buffer = (char *)calloc(table->capacity, MAX_LINE_SIZE);
-    customWarning(buffer, hashTableError::BUFFER_ERROR);
+    customWarning(buffer, hashTableError::BUFFER_ERROR); // TODO do not use customWarning for nullptr checks
 
     char *currPtr = buffer;
 
