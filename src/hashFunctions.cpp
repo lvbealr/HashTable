@@ -1,6 +1,6 @@
 #include <immintrin.h>
 #include <stdint.h>
-#include <time.h>
+#include <string.h>
 
 #include "common.h"
 #include "hashFunctions.h"
@@ -143,8 +143,6 @@ uint32_t adler32Wrapper(string *data, uint32_t seed) {
     return adler32(data);
 }
 
-#include <string.h>
-
 uint32_t adler32(string *data) {
     const char* message = data->data;
     size_t length = data->size;
@@ -161,29 +159,29 @@ uint32_t adler32(string *data) {
         memcpy(&bytes, message + i, 4);
 
         __asm__ volatile (
-                "mov %1, %%ecx\n"
-                "movzbl %%cl, %%ecx\n"
-                "addl %%ecx, %0\n"
-                "addl %0, %2\n"
-                "mov %1, %%ecx\n"
-                "shr $8, %%ecx\n"
-                "movzbl %%cl, %%ecx\n"
-                "addl %%ecx, %0\n"
-                "addl %0, %2\n"
-                "mov %1, %%ecx\n"
-                "shr $16, %%ecx\n"
-                "movzbl %%cl, %%ecx\n"
-                "addl %%ecx, %0\n"
-                "addl %0, %2\n"
-                "mov %1, %%ecx\n"
-                "shr $24, %%ecx\n"
-                "movzbl %%cl, %%ecx\n"
-                "addl %%ecx, %0\n"
-                "addl %0, %2\n"
+                "mov    %1,    %%ecx\n"
+                "movzbl %%cl,  %%ecx\n"
+                "addl   %%ecx, %0\n"
+                "addl   %0,    %2\n"
+                "mov    %1,    %%ecx\n"
+                "shr    $8,    %%ecx\n"
+                "movzbl %%cl,  %%ecx\n"
+                "addl   %%ecx, %0\n"
+                "addl   %0,    %2\n"
+                "mov    %1,    %%ecx\n"
+                "shr    $16,   %%ecx\n"
+                "movzbl %%cl,  %%ecx\n"
+                "addl   %%ecx, %0\n"
+                "addl   %0,    %2\n"
+                "mov    %1,    %%ecx\n"
+                "shr    $24,   %%ecx\n"
+                "movzbl %%cl,  %%ecx\n"
+                "addl   %%ecx, %0\n"
+                "addl   %0,    %2\n"
                 : "+r"(a), "+r"(bytes), "+r"(b)
                 :
                 : "ecx"
-                );
+        );
     }
 
     for (; i < length; i++) {
@@ -195,10 +193,10 @@ uint32_t adler32(string *data) {
     b %= 65521;
 
     #else
-    for (size_t i = 0; i < length; i++) {
-        a = (a + (uint8_t)(message[i])) % 65521;
-        b = (b + a) % 65521;
-    }
+        for (size_t i = 0; i < length; i++) {
+            a = (a + (uint8_t)(message[i])) % 65521;
+            b = (b + a) % 65521;
+        }
     #endif
 
     return (b << 16) + a;
