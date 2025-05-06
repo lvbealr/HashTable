@@ -1,35 +1,68 @@
 cmake_minimum_required(VERSION 3.30)
-project(hashTable LANGUAGES CXX) # TODO add ASM
+project(hashTable LANGUAGES CXX ASM_NASM)
 
-# TODO target_compile_features() for standard setting
-set(CMAKE_CXX_STANDARD 17)
-
-set(CMAKE_CXX_STANDARD_REQUIRED ON) # TODO find out
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-# TODO RELEASE_FLAGS and target_compile_options(...) + target_compile_definitions(...)
-SET(CMAKE_CXX_FLAGS "-g -D NDEBUG -D OPTIMIZE_CRC32 -D OPTIMIZE_STRCMP -D OPTIMIZE_CREATE_NODE -D OPTIMIZE_ADLER32 -O3 -mavx2 -mavx -march=native -msse4.2 -no-pie")
-add_executable(hashTable
-    main.cpp
-        src/hashFunctions.cpp
-        src/IO.cpp
-        customWarning/colorPrint/colorPrint.cpp
+# colorPrint static library
+add_library(colorPrint STATIC
+    customWarning/colorPrint/colorPrint.cpp
 )
-# TODO separate lib for colorPrint
+target_include_directories(colorPrint PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/customWarning/colorPrint
+    ${CMAKE_CURRENT_SOURCE_DIR}/customWarning
+)
 
-target_sources(hashTable PRIVATE createNode_asm/createNode.o)
+# linkedList static library
+add_library(linkedList INTERFACE)
+target_include_directories(linkedList INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/list)
 
-# TODO
-# add_library(list-lib INTERFACE)
-# target_include_directories(list-lib PUBLIC list/)
-# target_link_library(...)
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/createNode.o
+    COMMAND nasm -f elf64 -g ${CMAKE_CURRENT_SOURCE_DIR}/createNode_asm/createNode.asm -o ${CMAKE_CURRENT_BINARY_DIR}/createNode.o
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/createNode_asm/createNode.asm
+    COMMENT "Compiling createNode.asm with NASM"
+)
 
-# TODO use list(TRANSFORM ... PREPEND ...)
-target_include_directories(hashTable PRIVATE
-    list/
+set(SOURCES
+    main.cpp
+    src/hashFunctions.cpp
+    src/IO.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/createNode.o
+)
+
+set(INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/customWarning/colorPrint
-    ${CMAKE_CURRENT_SOURCE_DIR}/customWarning/
 )
+
+function(add_hash_table_target TARGET_NAME OPTIMIZATION_LEVEL DEFINITIONS COMPILER_OPTIONS)
+    add_executable(${TARGET_NAME} ${SOURCES})
+    target_compile_features(${TARGET_NAME} PUBLIC cxx_std_17)
+    target_include_directories(${TARGET_NAME} PRIVATE ${INCLUDE_DIRS})
+    target_link_libraries(${TARGET_NAME} PRIVATE colorPrint linkedList)
+    target_compile_definitions(${TARGET_NAME} PRIVATE NDEBUG ${DEFINITIONS})
+    target_compile_options(${TARGET_NAME} PRIVATE ${OPTIMIZATION_LEVEL} ${COMPILER_OPTIONS})
+    target_link_options(${TARGET_NAME} PRIVATE -no-pie)
+    
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        target_compile_options(${TARGET_NAME} PRIVATE -g)
+        target_compile_definitions(${TARGET_NAME} PRIVATE -U NDEBUG)
+    endif()
+endfunction()
+
+# -O0
+add_hash_table_target(hashTable_default_o0 "-O0" "" "")
+
+# -O3
+add_hash_table_target(hashTable_default_o3 "-O3" "" "")
+
+# OPTIMIZE_CRC32 
+add_hash_table_target(hashTable_optimize_crc32 "-O3" "OPTIMIZE_CRC32" "-mavx2;-mavx;-msse4.2;-no-pie")
+
+# OPTIMIZE_CRC32 & OPTIMIZE_STRCMP
+add_hash_table_target(hashTable_optimize_crc32_strcmp "-O3" "OPTIMIZE_CRC32;OPTIMIZE_STRCMP" "-mavx;-mavx2;-msse4.2;-no-pie")
+
+# OPTIMIZE_CRC32 & OPTIMIZE_STRCMP & OPTIMIZE_CREATE_NODE
+add_hash_table_target(hashTable_optimize_crc32_strcmp_create_node "-O3" "OPTIMIZE_CRC32;OPTIMIZE_STRCMP;OPTIMIZE_CREATE_NODE" "-mavx;-mavx2;-msse4.2;-no-pie")
+
+# OPTIMIZE_CRC32 & OPTIMIZE_STRCMP & OPTIMIZE_CREATE_NODE & OPTIMIZE_ADLER32
+add_hash_table_target(hashTable_optimize_crc32_strcmp_create_node_adler32 "-O3" "OPTIMIZE_CRC32;OPTIMIZE_STRCMP;OPTIMIZE_CREATE_NODE;OPTIMIZE_ADLER32" "-mavx;-mavx2;-msse4.2;-no-pie")
