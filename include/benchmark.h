@@ -11,18 +11,18 @@
 
 const size_t MAX_LINE_SIZE = 256;
 
-const size_t SEARCH_REPEAT_COUNT = 1000000;
+const size_t SEARCH_REPEAT_COUNT = 100000;
 
 #define WARMING_UP(...) { __VA_ARGS__ }
 
-#define TIME(...) do {                         \
-    uint64_t start = __rdtsc();                \
-    __VA_ARGS__                                \
-    uint64_t end   = __rdtsc();                \
-                                               \
-    uint64_t ticks = end - start;              \
-    customPrint(purple, bold, bgDefault,       \
-    "(%s): %lu\n\n", hashFunctionName, ticks); \
+#define TIME(...) do {                                               \
+    uint64_t start = __rdtsc();                                      \
+    __VA_ARGS__                                                      \
+    uint64_t end   = __rdtsc();                                      \
+                                                                     \
+    uint64_t ticks = end - start;                                    \
+    customPrint(purple, bold, bgDefault,                             \
+    "(%s): %lu\n\n", hashFunctionName, ticks / SEARCH_REPEAT_COUNT); \
 } while (0)
 
 enum class benchmarkMode {
@@ -51,9 +51,9 @@ hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
     textDataInitialize(testFile, &testData);
 
     hashTable<string *> hashTable = {};
-    initializeHashTable(&hashTable, 2);
+    initializeHashTable(&hashTable, 100003);
 
-    fillHashTableWithRehash(&hashTable, &inputData, hashWrapper);
+    fillHashTable(&hashTable, &inputData, hashWrapper);
 
     hashTableError saveStatus = saveHashTableToFile(&hashTable, outputFile);
     customWarning(saveStatus == hashTableError::NO_ERRORS, hashTableError::SAVE_HASH_TABLE_ERROR);
@@ -104,7 +104,7 @@ hashTableError saveHashTableToFile(hashTable<string *> *table, const char *outpu
     customWarning(openFile != (int)hashTableError::FILE_NOT_FOUND, hashTableError::FILE_NOT_FOUND);
 
     char *buffer = (char *)calloc(table->capacity, MAX_LINE_SIZE);
-    customWarning(buffer, hashTableError::BUFFER_ERROR); // TODO do not use customWarning for nullptr checks
+    customWarning(buffer, hashTableError::BUFFER_ERROR);
 
     char *currPtr = buffer;
 
