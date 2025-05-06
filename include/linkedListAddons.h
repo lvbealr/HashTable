@@ -6,6 +6,8 @@
 #include "common.h"
 #include "linkedList.h"
 
+const size_t MAX_WORD_SIZE = 32;
+
 #ifdef OPTIMIZE_CREATE_NODE
     extern "C" string *createNode(char *wordPtr, size_t length);
 #else
@@ -15,12 +17,11 @@
 
         newNode->size = length;
 
-        newNode->data = (char *)calloc(newNode->size + 1, sizeof(char));
+        newNode->data = (char *)calloc(MAX_WORD_SIZE, sizeof(char));
 
         CHECK_FOR_NULL(newNode->data, FREE_(newNode); return NULL);
 
         strncpy(newNode->data, wordPtr, newNode->size);
-        newNode->data[newNode->size] = '\0';
 
         return newNode;
     }
