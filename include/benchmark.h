@@ -11,15 +11,24 @@
 
 const size_t MAX_LINE_SIZE = 256;
 
-#define TIME(...) do {                                          \
-    uint64_t start = __rdtsc();                                 \
-    __VA_ARGS__                                                 \
-    uint64_t end   = __rdtsc();                                 \
-                                                                \
-    uint64_t ticks = end - start;                               \
-    customPrint(purple, bold, bgDefault,                        \
-    "%-16s: %lu\n", hashFunctionName, ticks);                   \
+const size_t SEARCH_REPEAT_COUNT = 1000000;
+
+#define WARMING_UP(...) { __VA_ARGS__ }
+
+#define TIME(...) do {                         \
+    uint64_t start = __rdtsc();                \
+    __VA_ARGS__                                \
+    uint64_t end   = __rdtsc();                \
+                                               \
+    uint64_t ticks = end - start;              \
+    customPrint(purple, bold, bgDefault,       \
+    "(%s): %lu\n\n", hashFunctionName, ticks); \
 } while (0)
+
+enum class benchmarkMode {
+    BENCHMARK_MODE_WARMING_UP = 0,
+    BENCHMARK_MODE_TIME       = 1
+};
 
 hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
                                   const char *inputFile, const char *testFile, const char *outputFile,
@@ -30,7 +39,7 @@ hashTableError searchData         (hashTable<string *> *table, textData *testDat
 
 hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
                                   const char *inputFile, const char *testFile, const char *outputFile,
-                                  const char *hashFunctionName) {
+                                  const char *hashFunctionName, benchmarkMode mode) {
     customWarning(inputFile,  hashTableError::FILE_NOT_FOUND);
     customWarning(testFile,   hashTableError::FILE_NOT_FOUND);
     customWarning(outputFile, hashTableError::FILE_NOT_FOUND);
@@ -49,13 +58,35 @@ hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
     hashTableError saveStatus = saveHashTableToFile(&hashTable, outputFile);
     customWarning(saveStatus == hashTableError::NO_ERRORS, hashTableError::SAVE_HASH_TABLE_ERROR);
 
-    TIME(
-            for (size_t i = 0; i < 1000; i++) {
-                hashTableError searchStatus = searchData(&hashTable, &testData, hashWrapper);
-                customWarning(searchStatus == hashTableError::NO_ERRORS, hashTableError::SEARCH_DATA_ERROR);
-            }
+    switch (mode) {
+        case benchmarkMode::BENCHMARK_MODE_WARMING_UP:
+            WARMING_UP(
+                for (size_t i = 0; i < SEARCH_REPEAT_COUNT; i++) {
+                    customPrint(purple, bold, bgDefault, "\r(%s) Warming up [%lu/%lu]\t", hashFunctionName, i + 1, SEARCH_REPEAT_COUNT);
+                    hashTableError searchStatus = searchData(&hashTable, &testData, hashWrapper);
+                    customWarning(searchStatus == hashTableError::NO_ERRORS, hashTableError::SEARCH_DATA_ERROR);
+                }
+                customPrint(purple, bold, bgDefault, "\n(%s) Warming up done \t\n", hashFunctionName);
+            );
 
-    );
+            break;
+
+        case benchmarkMode::BENCHMARK_MODE_TIME:
+            TIME(
+                customPrint(purple, bold, bgDefault, "(%s) Start benchmarking\n", hashFunctionName);
+                for (size_t i = 0; i < SEARCH_REPEAT_COUNT; i++) {
+                    hashTableError searchStatus = searchData(&hashTable, &testData, hashWrapper);
+                    customWarning(searchStatus == hashTableError::NO_ERRORS, hashTableError::SEARCH_DATA_ERROR);
+                }
+                customPrint(purple, bold, bgDefault, "(%s) Benchmarking done\n", hashFunctionName);
+            );    
+
+            break;
+
+        default:
+            customPrint(red, bold, bgDefault, "Unknown benchmark mode\n");
+            break;
+    }
 
     textDataDestruct(&inputData);
     textDataDestruct(&testData);
