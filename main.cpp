@@ -27,36 +27,36 @@ int main(int argc, char *argv[]) {
     // TODO (optional) pass hash func as a template parameter
 
     RUN_BENCHMARKS(
-        benchmarkHashTable(pjw32Wrapper,    inputFile, testFile, 
-            "pjw32.csv",   "pjw32",   benchmarkMode::BENCHMARK_MODE_WARMING_UP);
-        RUN_TEST(100, benchmarkHashTable(pjw32Wrapper,    inputFile, testFile, 
-            "pjw32.csv",   "pjw32",   benchmarkMode::BENCHMARK_MODE_TIME);)
+        // benchmarkHashTable(pjw32Wrapper,    inputFile, testFile, 
+        //     "pjw32.csv",   "pjw32",   benchmarkMode::BENCHMARK_MODE_WARMING_UP);
+        // RUN_TEST(1, benchmarkHashTable(pjw32Wrapper,    inputFile, testFile, 
+        //     "pjw32.csv",   "pjw32",   benchmarkMode::BENCHMARK_MODE_TIME);)
         
-        benchmarkHashTable(adler32Wrapper,  inputFile, testFile, 
-            "adler32.csv", "adler32", benchmarkMode::BENCHMARK_MODE_WARMING_UP);
-        RUN_TEST(100, benchmarkHashTable(adler32Wrapper,  inputFile, testFile, 
+        // benchmarkHashTable(adler32Wrapper,  inputFile, testFile, 
+        //     "adler32.csv", "adler32", benchmarkMode::BENCHMARK_MODE_WARMING_UP);
+        RUN_TEST(1, benchmarkHashTable(adler32Wrapper,  inputFile, testFile, 
             "adler32.csv", "adler32", benchmarkMode::BENCHMARK_MODE_TIME);)
 
-        benchmarkHashTable(sdbm32Wrapper,   inputFile, testFile, 
-            "sdbm32.csv",  "sdbm32",  benchmarkMode::BENCHMARK_MODE_WARMING_UP);    
-        RUN_TEST(100, benchmarkHashTable(sdbm32Wrapper,   inputFile, testFile, 
-            "sdbm32.csv",  "sdbm32",  benchmarkMode::BENCHMARK_MODE_TIME);)
+        // benchmarkHashTable(sdbm32Wrapper,   inputFile, testFile, 
+        //     "sdbm32.csv",  "sdbm32",  benchmarkMode::BENCHMARK_MODE_WARMING_UP);    
+        // RUN_TEST(1, benchmarkHashTable(sdbm32Wrapper,   inputFile, testFile, 
+        //     "sdbm32.csv",  "sdbm32",  benchmarkMode::BENCHMARK_MODE_TIME);)
         
-        benchmarkHashTable(fnv32Wrapper,    inputFile, testFile, 
-            "fnv32.csv",   "fnv32",   benchmarkMode::BENCHMARK_MODE_WARMING_UP);
-        RUN_TEST(100, benchmarkHashTable(fnv32Wrapper,    inputFile, testFile, 
-            "fnv32.csv",   "fnv32",   benchmarkMode::BENCHMARK_MODE_TIME);)
+        // benchmarkHashTable(fnv32Wrapper,    inputFile, testFile, 
+        //     "fnv32.csv",   "fnv32",   benchmarkMode::BENCHMARK_MODE_WARMING_UP);
+        // RUN_TEST(1, benchmarkHashTable(fnv32Wrapper,    inputFile, testFile, 
+        //     "fnv32.csv",   "fnv32",   benchmarkMode::BENCHMARK_MODE_TIME);)
         
-        benchmarkHashTable(murmur3Wrapper,  inputFile, testFile, 
-            "murmur3.csv", "murmur3", benchmarkMode::BENCHMARK_MODE_WARMING_UP);
-        RUN_TEST(100, benchmarkHashTable(murmur3Wrapper,  inputFile, testFile, 
-            "murmur3.csv", "murmur3", benchmarkMode::BENCHMARK_MODE_TIME);)
+        // benchmarkHashTable(murmur3Wrapper,  inputFile, testFile, 
+        //     "murmur3.csv", "murmur3", benchmarkMode::BENCHMARK_MODE_WARMING_UP);
+        // RUN_TEST(1, benchmarkHashTable(murmur3Wrapper,  inputFile, testFile, 
+        //     "murmur3.csv", "murmur3", benchmarkMode::BENCHMARK_MODE_TIME);)
 
-        benchmarkHashTable(crc32Wrapper,    inputFile, testFile, 
-            "crc32.csv", "crc32",     benchmarkMode::BENCHMARK_MODE_WARMING_UP);    
-        RUN_TEST(100, benchmarkHashTable(crc32Wrapper,    inputFile, testFile, 
-            "crc32.csv", "crc32",     benchmarkMode::BENCHMARK_MODE_TIME);)
-    )
+        // benchmarkHashTable(crc32Wrapper,    inputFile, testFile, 
+        //     "crc32.csv", "crc32",     benchmarkMode::BENCHMARK_MODE_WARMING_UP);    
+        RUN_TEST(1, benchmarkHashTable(crc32Wrapper,    inputFile, testFile, 
+            "crc32.csv", "crc32",     benchmarkMode::BENCHMARK_MODE_TIME);))
+    // )
 
     return EXIT_SUCCESS;
 }

@@ -30,12 +30,19 @@ enum class benchmarkMode {
     BENCHMARK_MODE_TIME       = 1
 };
 
+struct Dictionary {
+    string **data = {};
+    size_t   size = {};
+};
+
 hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
                                   const char *inputFile, const char *testFile, const char *outputFile,
                                   const char *hashFunctionName);
 
 hashTableError saveHashTableToFile(hashTable<string *> *table, const char *outputFile);
-hashTableError searchData         (hashTable<string *> *table, textData *testData, hashFunctionWrapper hashWrapper);
+hashTableError searchData         (hashTable<string *> *table, Dictionary *dictionary, hashFunctionWrapper hashWrapper);
+
+hashTableError createDictionary(textData *testData, Dictionary *dictionary);
 
 hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
                                   const char *inputFile, const char *testFile, const char *outputFile,
@@ -51,19 +58,23 @@ hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
     textDataInitialize(testFile, &testData);
 
     hashTable<string *> hashTable = {};
-    initializeHashTable(&hashTable, 100003);
+    initializeHashTable(&hashTable, 32768);
 
     fillHashTable(&hashTable, &inputData, hashWrapper);
 
     hashTableError saveStatus = saveHashTableToFile(&hashTable, outputFile);
     customWarning(saveStatus == hashTableError::NO_ERRORS, hashTableError::SAVE_HASH_TABLE_ERROR);
 
+    Dictionary dictionary = {};
+    hashTableError createStatus = createDictionary(&testData, &dictionary);
+    customWarning(createStatus == hashTableError::NO_ERRORS, hashTableError::DICTIONARY_BAD_POINTER);
+
     switch (mode) {
         case benchmarkMode::BENCHMARK_MODE_WARMING_UP:
             WARMING_UP(
                 for (size_t i = 0; i < SEARCH_REPEAT_COUNT; i++) {
                     customPrint(purple, bold, bgDefault, "\r(%s) Warming up [%lu/%lu]\t", hashFunctionName, i + 1, SEARCH_REPEAT_COUNT);
-                    hashTableError searchStatus = searchData(&hashTable, &testData, hashWrapper);
+                    hashTableError searchStatus = searchData(&hashTable, &dictionary, hashWrapper);
                     customWarning(searchStatus == hashTableError::NO_ERRORS, hashTableError::SEARCH_DATA_ERROR);
                 }
                 customPrint(purple, bold, bgDefault, "\n(%s) Warming up done \t\n", hashFunctionName);
@@ -75,7 +86,8 @@ hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
             TIME(
                 customPrint(purple, bold, bgDefault, "(%s) Start benchmarking\n", hashFunctionName);
                 for (size_t i = 0; i < SEARCH_REPEAT_COUNT; i++) {
-                    hashTableError searchStatus = searchData(&hashTable, &testData, hashWrapper);
+                    customPrint(green, bold, bgDefault, "\r%lu / %lu", i, SEARCH_REPEAT_COUNT);
+                    hashTableError searchStatus = searchData(&hashTable, &dictionary, hashWrapper);
                     customWarning(searchStatus == hashTableError::NO_ERRORS, hashTableError::SEARCH_DATA_ERROR);
                 }
                 customPrint(purple, bold, bgDefault, "(%s) Benchmarking done\n", hashFunctionName);
@@ -90,6 +102,8 @@ hashTableError benchmarkHashTable(hashFunctionWrapper hashWrapper,
 
     textDataDestruct(&inputData);
     textDataDestruct(&testData);
+
+    // TODO: destroy dictionary
 
     destroyHashTable(&hashTable);
 
@@ -128,18 +142,35 @@ hashTableError saveHashTableToFile(hashTable<string *> *table, const char *outpu
     return hashTableError::NO_ERRORS;
 }
 
-hashTableError searchData(hashTable<string *> *table, textData *testData, hashFunctionWrapper hashWrapper) {
-    customWarning(table,      hashTableError::HASH_TABLE_BAD_POINTER);
+hashTableError createDictionary(textData *testData, Dictionary *dictionary) {
     customWarning(testData,   hashTableError::TEXT_DATA_BAD_POINTER);
+    customWarning(dictionary, hashTableError::DICTIONARY_BAD_POINTER);
+
+    dictionary->size = testData->lineCount;
+
+    dictionary->data = (string **)calloc(dictionary->size, sizeof(string *));
+    customWarning(dictionary->data, hashTableError::BUFFER_ERROR);
+    
+    string **dict = dictionary->data;
 
     for (size_t i = 0; i < testData->lineCount; i++) {
         string *data = createNode(testData->lineArray[i].linePointer, testData->lineArray[i].lineSize);
         customWarning(data, hashTableError::NODE_CREATION_ERROR);
 
-        hashTableError error = searchString(table, data, hashWrapper);
-        customWarning(error == hashTableError::NO_ERRORS, hashTableError::SEARCH_DATA_ERROR);
+        dict[i] = data;
+    }
 
-        destroyNode(data);
+    return hashTableError::NO_ERRORS;
+}
+
+__attribute__((noinline)) hashTableError searchData(hashTable<string *> *table, Dictionary *dictionary, hashFunctionWrapper hashWrapper) {
+    customWarning(table, hashTableError::HASH_TABLE_BAD_POINTER);
+
+    string **dict = dictionary->data;
+
+    for (size_t i = 0; i < dictionary->size; i++) {
+        hashTableError error = searchString(table, dict[i], hashWrapper);
+        customWarning(error == hashTableError::NO_ERRORS, hashTableError::SEARCH_DATA_ERROR);
     }
 
     return hashTableError::NO_ERRORS;
