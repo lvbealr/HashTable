@@ -65,8 +65,6 @@
 - **Murmur3**
 - **CRC32**
 
-// TODO: small string optimization (C++) union
-
 ### Параметры тестирования
 Тестировалась хэш-таблица со структурой:
 
@@ -421,7 +419,7 @@ uint32_t crc32(string *data) {
 
 <p align="center">
   <a href="" rel="noopener">
- <img src="https://i.ibb.co/XrHp9KSJ/image.png" alt="Kcachegrind strcmp"></a>
+ <img src="https://i.ibb.co/0RqZMp29/image.png" alt="Kcachegrind strcmp"></a>
 </p>
 
 Попробуем использовать инструкции `_mm256_loadu_si256` и `_mm256_cmpeq_epi8` для ускорения сравнения данных в хэш-таблице:
@@ -455,11 +453,6 @@ inline int fastStrcmp(const char *a, const char *b) {
 | Adler32     | 27,98% ± 3,83%            | 85,39% ± 4,35%         |
 | CRC32       | 31,98% ± 4,00%            | 534,10%% ± 4,06%       |
 
-<p align="center">
-  <a href="" rel="noopener">
- <img src="https://i.ibb.co/9H0yvZZj/image.png" alt="strcmp optimization"></a>
-</p>
-
 Видим относительный прирост на 32% в реализации с хэш-функцией `crc32` и 28% - с `adler32`. Кроме этого, инлайнинг функции `fastStrcmp` уменьшает накладные расходы на
 вызов функции. 
 
@@ -469,11 +462,6 @@ inline int fastStrcmp(const char *a, const char *b) {
 На современных процессорах `rep movsb` высоко оптимизирована для больших блоков (активно использует кэш), не выполняет лишних проверок нулевых терминальных символов, 
 так как копирует ровно `length` байт напрямую из `rsi` (источник) в `rdi` (получатель). 
 В ассемблерной реализации используется минимум условных переходов, что снижает вероятность ошибки branch-predictor'а.
-
-<p align="center">
-  <a href="" rel="noopener">
- <img src="https://i.imgur.com/4oiAZmc.png" alt="Kcachegrind createNode"></a>
-</p>
 
 Ассемблерная версия (NASM):
 
@@ -623,7 +611,7 @@ uint32_t adler32(string *data) {
 
 <p align="center">
   <a href="" rel="noopener">
- <img src="https://i.imgur.com/w0DTpGm.png" alt="adler32 optimization"></a>
+ <img src="https://i.ibb.co/67j3BF4v/image.png" alt="adler32 optimization"></a>
 </p>
 
 В оптимизированной версии входные данные обрабатываются блоками по 32 бита за итераций. Это уменьшает количество итераций цикла в 4 раза по сравнению с побайтовой обработкой
