@@ -159,11 +159,21 @@ hashTableError rehashTable(hashTable<T> *table, hashFunctionWrapper hashWrapper)
     return hashTableError::NO_ERRORS;
 }
 
+inline int fastStrcmp(const char *a, const char *b) {
+    __m256i va = _mm256_loadu_si256((const __m256i *)a);
+    __m256i vb = _mm256_loadu_si256((const __m256i *)b);
+
+    __m256i  cmp  = _mm256_cmpeq_epi8(va, vb);
+    uint32_t mask = _mm256_movemask_epi8(cmp);
+
+    return (mask != 0xFFFFFFFF);
+}
+
 __attribute__((noinline)) hashTableError searchString(hashTable<string *> *table, string *data, hashFunctionWrapper hashWrapper) {
     customWarning(table, hashTableError::HASH_TABLE_BAD_POINTER);
     customWarning(data,  hashTableError::TEXT_DATA_BAD_POINTER);
 
-    uint32_t hashValue = hashWrapper(data, SEED) & (table->capacity - 1);
+    uint32_t hashValue = hashWrapper(data, SEED) % table->capacity;
 
     linkedList<string *> *list = &table->table[hashValue];
 
@@ -173,30 +183,14 @@ __attribute__((noinline)) hashTableError searchString(hashTable<string *> *table
         string *value = list->data[current];
 
         #ifdef OPTIMIZE_STRCMP
-        int result = {};
-
-        asm volatile (
-            "vmovdqu (%1), %%ymm0\n"                // load 32 bytes from a
-            "vmovdqu (%2), %%ymm1\n"                // load 32 bytes from b
-            "vpcmpeqb %%ymm1, %%ymm0, %%ymm2\n"     // compare bytes
-            "vpmovmskb %%ymm2, %0\n"                // move comparison mask to result
-            "vzeroupper\n"                          // clear upper YMM registers
-            : "=r" (result)                         // output
-            : "r" (value->data), "r" (data->data)   // inputs
-            : "%ymm0", "%ymm1", "%ymm2"             // clobbered registers
-        );
-
-        if (value && result == 0xFFFFFFFF) {
-            return hashTableError::NO_ERRORS;
-        }
-
-        #else
+            #define strcmp fastStrcmp
+        #endif
 
         if (value && strcmp(value->data, data->data) == 0) {
             return hashTableError::NO_ERRORS;
         }
 
-        #endif
+        #undef strcmp
 
         current = list->next[current];
     }

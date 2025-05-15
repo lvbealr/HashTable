@@ -50,19 +50,19 @@ function(add_hash_table_target TARGET_NAME OPTIMIZATION_LEVEL DEFINITIONS COMPIL
 endfunction()
 
 # -O0
-add_hash_table_target(hashTable_default_o0 "-O0" "" "")
+add_hash_table_target(hashTable_default_default "" "" "-g")
 
 # -O3
-add_hash_table_target(hashTable_default_o3 "-O3" "" "")
+add_hash_table_target(hashTable_default_o3 "-O3" "" "-g")
 
 # OPTIMIZE_CRC32 
-add_hash_table_target(hashTable_optimize_crc32 "-O3" "OPTIMIZE_CRC32" "-mavx2;-mavx;-msse4.2;-no-pie")
+add_hash_table_target(hashTable_optimize_crc32 "-O3" "OPTIMIZE_CRC32" "-mavx2;-mavx;-msse4.2;-no-pie;-g")
 
 # OPTIMIZE_CRC32 & OPTIMIZE_STRCMP
-add_hash_table_target(hashTable_optimize_crc32_strcmp "-O3" "OPTIMIZE_CRC32;OPTIMIZE_STRCMP" "-mavx;-mavx2;-msse4.2;-no-pie")
+add_hash_table_target(hashTable_optimize_crc32_strcmp "-O3" "OPTIMIZE_CRC32;OPTIMIZE_STRCMP" "-mavx;-mavx2;-msse4.2;-no-pie;-g")
 
 # OPTIMIZE_CRC32 & OPTIMIZE_STRCMP & OPTIMIZE_CREATE_NODE
-add_hash_table_target(hashTable_optimize_crc32_strcmp_create_node "-O3" "OPTIMIZE_CRC32;OPTIMIZE_STRCMP;OPTIMIZE_CREATE_NODE" "-mavx;-mavx2;-msse4.2;-no-pie")
+add_hash_table_target(hashTable_optimize_crc32_strcmp_create_node "-O3" "OPTIMIZE_CRC32;OPTIMIZE_STRCMP;OPTIMIZE_CREATE_NODE" "-mavx;-mavx2;-msse4.2;-no-pie;-g")
 
 # OPTIMIZE_CRC32 & OPTIMIZE_STRCMP & OPTIMIZE_CREATE_NODE & OPTIMIZE_ADLER32
-add_hash_table_target(hashTable_optimize_crc32_strcmp_create_node_adler32 "-O3" "OPTIMIZE_CRC32;OPTIMIZE_STRCMP;OPTIMIZE_CREATE_NODE;OPTIMIZE_ADLER32" "-mavx;-mavx2;-msse4.2;-no-pie")
+add_hash_table_target(hashTable_optimize_crc32_strcmp_create_node_adler32 "-O3" "OPTIMIZE_CRC32;OPTIMIZE_STRCMP;OPTIMIZE_CREATE_NODE;OPTIMIZE_ADLER32" "-mavx;-mavx2;-msse4.2;-no-pie;-g")
